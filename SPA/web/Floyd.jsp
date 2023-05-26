@@ -44,7 +44,86 @@
             width: 14.28%;
         }
     </style>
+    <script src="js/hello.js"></script>
     <script>
+        function readdata_matrix(ad_matrix,sideArray){
+            for(var i=0;i<sideArray.length;i++){
+                ad_matrix[parseInt(sideArray[i].start)-1][parseInt(sideArray[i].end)-1]=parseInt(sideArray[i].weight);
+                ad_matrix[parseInt(sideArray[i].end)-1][parseInt(sideArray[i].start)-1]=parseInt(sideArray[i].weight);
+            }
+        }
+        function readdata_struct(edge_struct,sideArray){
+            for(var i=0;i<sideArray.length;i++){
+                edge_struct.first=parseInt(sideArray[i].start)-1;
+                edge_struct.last=parseInt(sideArray[i].end)-1;
+                edge_struct.weight=parseInt(sideArray[i].weight);
+            }
+        }
+        function Floyd_Warshall(begin,sideArray,vertex_num){
+            this.isInitialized=false;
+            this.passvertex=0;
+
+
+            //this.dis=new Array(vertex_num).fill(Infinity);
+            //this.first_node=new Array(vertex_num).fill(-1);
+            //this.path=new Array(vertex_num).fill('')
+
+            this.ad_matrix = [];//邻接矩阵（dijkstra）and (Floyd)
+            for(var i=0;i<vertex_num;i++){
+                this.ad_matrix[i]=[];
+                for(var j=0;j<vertex_num;j++){
+                    if (i===j){
+                        this.ad_matrix[i][j]=0;
+                    }else{
+                        this.ad_matrix[i][j]=Infinity;
+                    }
+
+                }
+            }
+            this.initialize=function(){
+                readdata_matrix(this.ad_matrix,sideArray);
+                this.isInitialized=true;
+            }
+
+            this.Floyd_Warshall_seek=function(){
+                //for(var k=0;k<vertex_num;k++){//每点按钮一次代表所有点经过k点的最短距离实现
+                if(this.isInitialized===false){
+                    this.initialize();
+                    this.isInitialized=true;
+                }else{
+                    console.log("1");
+                    for(var i=0;i<vertex_num;i++){
+                        console.log("2");
+                        for(var j=0;j<vertex_num;j++){
+                            console.log("3");
+                            if(this.ad_matrix[i][j]>this.ad_matrix[i][this.passvertex]+this.ad_matrix[this.passvertex][j]){
+                                this.ad_matrix[i][j]=this.ad_matrix[i][this.passvertex]+this.ad_matrix[this.passvertex][j];
+                                this.ad_matrix[j][i]=this.ad_matrix[i][j];
+
+
+                                //Time_complexity++;
+                            }
+
+                        }
+
+                    }
+                    console.log("4");
+                    if(this.passvertex<vertex_num){
+                        this.passvertex=this.passvertex+1;
+                    }
+                }
+            }
+            this.getMatrix=function (){
+                return this.ad_matrix;
+            }
+            this.judge=function(){
+                if(this.passvertex===vertex_num){
+                    return false;//false表示算法结束
+                }else{
+                    return true;//true表示算法继续
+                }
+            }
+        }
         window.onload=function () {
             var canvas=document.getElementById("canvas");
             var ctx=canvas.getContext("2d");
@@ -543,105 +622,125 @@
                 end.value="";
                 weight.value="";
             }
-            var nextstep=document.getElementById("Pre");
-            nextstep.onclick=function (){
-                //调用一次函数并更新至矩阵
+            var pre=document.getElementById("Pre");
+            var flo=new Floyd_Warshall(0,sideArray,6);
+            var td1=[document.getElementById("td11"),document.getElementById("td12"),document.getElementById("td13"),document.getElementById("td14"),document.getElementById("td15"),document.getElementById("td16")];
+            var td2=[document.getElementById("td21"),document.getElementById("td22"),document.getElementById("td23"),document.getElementById("td24"),document.getElementById("td25"),document.getElementById("td26")];
+            var td3=[document.getElementById("td31"),document.getElementById("td32"),document.getElementById("td33"),document.getElementById("td34"),document.getElementById("td35"),document.getElementById("td36")];
+            var td4=[document.getElementById("td41"),document.getElementById("td42"),document.getElementById("td43"),document.getElementById("td44"),document.getElementById("td45"),document.getElementById("td46")];
+            var td5=[document.getElementById("td51"),document.getElementById("td52"),document.getElementById("td53"),document.getElementById("td54"),document.getElementById("td55"),document.getElementById("td56")];
+            var td6=[document.getElementById("td61"),document.getElementById("td62"),document.getElementById("td63"),document.getElementById("td64"),document.getElementById("td65"),document.getElementById("td66")];
+            var td=[td1,td2,td3,td4,td5,td6];
+            var matrix;
+            var i,j;
+            pre.onclick=function (){
+                flo.Floyd_Warshall_seek();
+                matrix=flo.getMatrix();
+                for(i=0;i<=5;i++){
+                    for(j=0;j<=5;j++){
+                        if(matrix[i][j]!==Infinity){
+                            td[i][j].innerText=matrix[i][j];
+                        }else {
+                            td[i][j].innerText="∞";
+                        }
+                    }
+                }
             }
         }
     </script>
 </head>
 <body>
-    <div>
-        <table id="content">
-            <tr>
-                <td colspan="2" id="td-lt" height=50% width=66.6%>
-                    <canvas id="canvas"></canvas>
-                </td>
-                <td id="td-rt" height=50% width=auto>
-                    <table id="matrix" cellspacing=35px>
-                        <tr>
-                            <td>&nbsp</td>
-                            <td>1</td>
-                            <td>2</td>
-                            <td>3</td>
-                            <td>4</td>
-                            <td>5</td>
-                            <td>6</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td id="td11">0</td>
-                            <td id="td12">∞</td>
-                            <td id="td13">∞</td>
-                            <td id="td14">∞</td>
-                            <td id="td15">∞</td>
-                            <td id="td16">∞</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td id="td21">∞</td>
-                            <td id="td22">0</td>
-                            <td id="td23">∞</td>
-                            <td id="td24">∞</td>
-                            <td id="td25">∞</td>
-                            <td id="td26">∞</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td id="td31">∞</td>
-                            <td id="td32">∞</td>
-                            <td id="td33">0</td>
-                            <td id="td34">∞</td>
-                            <td id="td35">∞</td>
-                            <td id="td36">∞</td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td id="td41">∞</td>
-                            <td id="td42">∞</td>
-                            <td id="td43">∞</td>
-                            <td id="td44">0</td>
-                            <td id="td45">∞</td>
-                            <td id="td46">∞</td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td id="td51">∞</td>
-                            <td id="td52">∞</td>
-                            <td id="td53">∞</td>
-                            <td id="td54">∞</td>
-                            <td id="td55">0</td>
-                            <td id="td56">∞</td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td id="td61">∞</td>
-                            <td id="td62">∞</td>
-                            <td id="td63">∞</td>
-                            <td id="td64">∞</td>
-                            <td id="td65">∞</td>
-                            <td id="td66">0</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td id="td-lb" height=50% width=auto>
-                    <form id="custom">
-                        端点1<br><input id="start" type="text"><br>
-                        端点2<br><input id="end" type="text"><br>
-                        权重<br><input id="weight" type="text"><br><br>
-                        <input id="connection" type="button" value="生成连线"><br><br>
-                        <input id="Pre" type="button" value="下一步">
-                    </form>
-                </td>
-                <td colspan="2" id="td-rb" height=50% width=66.6%>
-                    <div id="con&res">
+<div>
+    <table id="content">
+        <tr>
+            <td colspan="2" id="td-lt" height=50% width=66.6%>
+                <canvas id="canvas"></canvas>
+            </td>
+            <td id="td-rt" height=50% width=auto>
+                <table id="matrix" cellspacing=35px>
+                    <tr>
+                        <td>&nbsp</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td id="td11">0</td>
+                        <td id="td12">∞</td>
+                        <td id="td13">∞</td>
+                        <td id="td14">∞</td>
+                        <td id="td15">∞</td>
+                        <td id="td16">∞</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td id="td21">∞</td>
+                        <td id="td22">0</td>
+                        <td id="td23">∞</td>
+                        <td id="td24">∞</td>
+                        <td id="td25">∞</td>
+                        <td id="td26">∞</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td id="td31">∞</td>
+                        <td id="td32">∞</td>
+                        <td id="td33">0</td>
+                        <td id="td34">∞</td>
+                        <td id="td35">∞</td>
+                        <td id="td36">∞</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td id="td41">∞</td>
+                        <td id="td42">∞</td>
+                        <td id="td43">∞</td>
+                        <td id="td44">0</td>
+                        <td id="td45">∞</td>
+                        <td id="td46">∞</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td id="td51">∞</td>
+                        <td id="td52">∞</td>
+                        <td id="td53">∞</td>
+                        <td id="td54">∞</td>
+                        <td id="td55">0</td>
+                        <td id="td56">∞</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td id="td61">∞</td>
+                        <td id="td62">∞</td>
+                        <td id="td63">∞</td>
+                        <td id="td64">∞</td>
+                        <td id="td65">∞</td>
+                        <td id="td66">0</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td id="td-lb" height=50% width=auto>
+                <form id="custom">
+                    point1<br><input id="start" type="text"><br>
+                    point2<br><input id="end" type="text"><br>
+                    weight<br><input id="weight" type="text"><br><br>
+                    <input id="connection" type="button" value="Connect"><br><br>
+                    <input id="Pre" type="button" value="Next">
+                </form>
+            </td>
+            <td colspan="2" id="td-rb" height=50% width=66.6%>
+                <div id="con&res">
 
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
 </body>
 </html>
